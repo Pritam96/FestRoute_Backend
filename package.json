@@ -1,0 +1,20 @@
+{
+  "name": "festroute",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "an app that finds the best routes between pandals",
+  "main": "server.js",
+  "scripts": {
+    "start": "NODE_ENV=production node server",
+    "dev": "nodemon sever"
+  },
+  "author": "Pritam Mondal",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "express": "^4.21.1"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7"
+  }
+}
