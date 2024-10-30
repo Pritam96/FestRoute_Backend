@@ -9,6 +9,8 @@ import pujas from "./routes/pujas.js";
 
 dotenv.config({ path: "./config/config.env" });
 
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
+
 // Connecting to DB
 connectDB();
 
@@ -27,6 +29,10 @@ if (MODE === "development") {
 
 // Mount routers
 app.use("/api/v1/pujas", pujas);
+
+// Adding middlewares
+app.use(notFound);
+app.use(errorHandler);
 
 app.listen(PORT, () =>
   console.log(
