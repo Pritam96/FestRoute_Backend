@@ -1,5 +1,5 @@
 import asyncHandler from "express-async-handler";
-import Puja from "../models/pujas.js";
+import Puja from "../models/puja.js";
 import ErrorResponse from "../utils/errorResponse.js";
 import SuccessResponse from "../utils/successResponse.js";
 

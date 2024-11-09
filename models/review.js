@@ -6,15 +6,15 @@ const reviewSchema = new Schema(
     // Rating given by the reviewer (from 1 to 5)
     rating: {
       type: Number,
-      required: true,
-      min: 1,
-      max: 5,
+      required: [true, "Rating is required"],
+      min: [1, "Rating must be at least 1"],
+      max: [5, "Rating cannot exceed 5"],
     },
 
     // Review text content
     reviewText: {
       type: String,
-      required: true,
+      required: [true, "Review text is required"],
       trim: true,
     },
 
@@ -22,14 +22,14 @@ const reviewSchema = new Schema(
     puja: {
       type: Schema.Types.ObjectId,
       ref: "Puja",
-      required: true,
+      required: [true, "Puja reference is required"],
     },
 
     // Reference to the User who wrote the review
     user: {
       type: Schema.Types.ObjectId,
       ref: "User",
-      required: true,
+      required: [true, "User reference is required"],
     },
   },
   {

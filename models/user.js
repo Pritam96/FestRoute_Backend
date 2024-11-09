@@ -8,7 +8,7 @@ const userSchema = new Schema(
     // Unique username for identification
     username: {
       type: String,
-      required: true,
+      required: [true, "Username is required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -18,7 +18,7 @@ const userSchema = new Schema(
     // Unique and validated email
     email: {
       type: String,
-      required: true,
+      required: [true, "Email is required"],
       unique: true,
       lowercase: true,
       trim: true,
@@ -31,7 +31,7 @@ const userSchema = new Schema(
     // Full name of the user for display purposes
     fullName: {
       type: String,
-      required: true,
+      required: [true, "Full name is required"],
       trim: true,
       index: true,
     },
@@ -39,7 +39,7 @@ const userSchema = new Schema(
     // URL for the user's avatar
     avatar: {
       type: String,
-      required: true,
+      required: [true, "Avatar URL is required"],
     },
 
     // Flag for admin privileges
@@ -80,7 +80,7 @@ const userSchema = new Schema(
     // Hashed password (excluded from queries)
     password: {
       type: String,
-      required: true,
+      required: [true, "Password is required"],
       select: false,
     },
 
@@ -113,6 +113,7 @@ userSchema.methods.matchPassword = async function (enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
+// Method to generate an access token
 userSchema.methods.generateAccessToken = function () {
   return jwt.sign(
     {
@@ -128,6 +129,7 @@ userSchema.methods.generateAccessToken = function () {
   );
 };
 
+// Method to generate a refresh token
 userSchema.methods.generateRefreshToken = function () {
   return jwt.sign(
     {

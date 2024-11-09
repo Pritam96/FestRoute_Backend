@@ -11,7 +11,7 @@ import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
 // Config environment variable path
 dotenv.config({ path: "./config/config.env" });
-const { PORT, MODE, CORS_ORIGIN } = process.env;
+const { PORT, NODE_ENV, CORS_ORIGIN } = process.env;
 
 // Connect to DB
 connectDB();
@@ -31,7 +31,7 @@ app.use(cookieParser());
 app.use(express.static("public"));
 
 // Development logging
-if (MODE === "development") {
+if (NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 
@@ -46,7 +46,8 @@ app.use(errorHandler);
 app
   .listen(PORT, () => {
     console.log(
-      `Server running in ${MODE} mode on http://localhost:${PORT}`.yellow.bold
+      `Server running in ${NODE_ENV} mode on http://localhost:${PORT}`.yellow
+        .bold
     );
   })
   .on("error", (err) => {

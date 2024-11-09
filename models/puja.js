@@ -4,7 +4,7 @@ import mongoose, { Schema } from "mongoose";
 const PujaSchema = new Schema(
   {
     // Puja or pandal name
-    name: { type: String, required: true },
+    name: { type: String, required: [true, "Puja name is required"] },
 
     // Type of puja, e.g., public or traditional
     type: { type: String },
@@ -16,7 +16,7 @@ const PujaSchema = new Schema(
     images: [{ type: String, default: [] }],
 
     // Thumbnail image URL for quick display
-    thumbnail: { type: String, required: true },
+    thumbnail: { type: String, required: [true, "Thumbnail is required"] },
 
     // Location details for mapping the puja
     location: {
@@ -50,10 +50,10 @@ const PujaSchema = new Schema(
     },
 
     // Start date of the puja event
-    startDate: { type: Date, required: true },
+    startDate: { type: Date, required: [true, "Start date is required"] },
 
     // End date of the puja event
-    endDate: { type: Date, required: true },
+    endDate: { type: Date, required: [true, "End date is required"] },
 
     // Visiting hours for the puja
     visitTiming: {
