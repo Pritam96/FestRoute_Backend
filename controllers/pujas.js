@@ -1,7 +1,7 @@
 import asyncHandler from "express-async-handler";
 import Puja from "../models/pujas.js";
 import ErrorResponse from "../utils/errorResponse.js";
-import SuccessResponse from "../utils/SuccessResponse.js";
+import SuccessResponse from "../utils/successResponse.js";
 
 // @desc    Get all pujas
 // @route   GET /api/v1/pujas
