@@ -1,41 +1,55 @@
-import dotenv from "dotenv";
 import express from "express";
+import dotenv from "dotenv";
 import morgan from "morgan";
 import colors from "colors";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
 import { connectDB } from "./config/db.js";
-
-import pujas from "./routes/pujas.js";
-
-dotenv.config({ path: "./config/config.env" });
-
+import setupRoutes from "./routes/index.js";
 import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
-// Connecting to DB
+// Config environment variable path
+dotenv.config({ path: "./config/config.env" });
+const { PORT, MODE, CORS_ORIGIN } = process.env;
+
+// Connect to DB
 connectDB();
 
 const app = express();
 
-// express body parser
-app.use(express.json());
+// CORS configuration
+const corsOptions = { origin: CORS_ORIGIN, credentials: true };
+app.use(cors(corsOptions));
 
-const PORT = process.env.PORT || 5000;
-const MODE = process.env.NODE_ENV || "development";
+// Parse JSON and URL-encoded data
+app.use(express.json({ limit: "16kb" }));
+app.use(express.urlencoded({ extended: true, limit: "16kb" }));
+app.use(cookieParser());
 
-// Dev logging middleware
+// Static folder
+app.use(express.static("public"));
+
+// Development logging
 if (MODE === "development") {
   app.use(morgan("dev"));
 }
 
-// Mount routers
-app.use("/api/v1/pujas", pujas);
+// Set up routes
+setupRoutes(app);
 
-// Adding middlewares
+// Error handling middlewares
 app.use(notFound);
 app.use(errorHandler);
 
-app.listen(PORT, () =>
-  console.log(
-    `Server running in ${MODE} mode on http://localhost:${PORT}`.yellow.bold
-  )
-);
+// Start server with error handling
+app
+  .listen(PORT, () => {
+    console.log(
+      `Server running in ${MODE} mode on http://localhost:${PORT}`.yellow.bold
+    );
+  })
+  .on("error", (err) => {
+    console.error(`Server failed to start: ${err.message}`.red.bold);
+    process.exit(1);
+  });
