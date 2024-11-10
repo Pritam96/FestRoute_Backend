@@ -22,7 +22,9 @@ export const getPujas = asyncHandler(async (req, res) => {
 export const getPuja = asyncHandler(async (req, res, next) => {
   const puja = await Puja.findById(req.params.id);
   if (!puja) {
-    return next(new ErrorResponse("Puja not found", 404));
+    return next(
+      new ErrorResponse({ message: "Puja not found", statusCode: 404 })
+    );
   }
   res.status(200).json(
     new SuccessResponse({
@@ -54,7 +56,9 @@ export const editPuja = asyncHandler(async (req, res, next) => {
     runValidators: true,
   });
   if (!puja) {
-    return next(new ErrorResponse("Puja not found", 404));
+    return next(
+      new ErrorResponse({ message: "Puja not found", statusCode: 404 })
+    );
   }
   res.status(200).json(
     new SuccessResponse({
@@ -70,7 +74,9 @@ export const editPuja = asyncHandler(async (req, res, next) => {
 export const deletePuja = asyncHandler(async (req, res, next) => {
   const puja = await Puja.findByIdAndDelete(req.params.id);
   if (!puja) {
-    return next(new ErrorResponse("Puja not found", 404));
+    return next(
+      new ErrorResponse({ message: "Puja not found", statusCode: 404 })
+    );
   }
   res.status(200).json(
     new SuccessResponse({

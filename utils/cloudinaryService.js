@@ -1,5 +1,9 @@
 import fs from "fs";
+import dotenv from "dotenv";
 import { v2 as cloudinary } from "cloudinary";
+import ErrorResponse from "./errorResponse.js";
+
+dotenv.config({ path: "./config/config.env" });
 
 // Configuration
 cloudinary.config({
@@ -9,18 +13,29 @@ cloudinary.config({
 });
 
 const uploadOnCloudinary = async (localFilePath) => {
+  if (!localFilePath) {
+    throw new ErrorResponse({
+      message: "File path is required",
+      statusCode: 400,
+    });
+  }
+
   try {
-    if (!localFilePath) {
-      return next(new ErrorResponse("Could not find the path", 404));
-    }
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
     });
     console.log("File upload successful", response);
+
     return response;
   } catch (error) {
+    console.error("Cloudinary upload error:", error);
+
+    throw new ErrorResponse({
+      message: "Failed to upload image to Cloudinary",
+      statusCode: 500,
+    });
+  } finally {
     fs.unlinkSync(localFilePath);
-    return null;
   }
 };
 
