@@ -51,14 +51,34 @@ export const userValidationSchemas = {
   ],
 
   login: [
-    // Email: Required, must be valid format
+    // Username or Email: At least one must be provided
+    body().custom((value, { req }) => {
+      if (!req.body.username && !req.body.email) {
+        throw new Error("Username or Email is required");
+      }
+      return true;
+    }),
+
+    // Username: If provided, it must meet the criteria
+    check("username")
+      .optional()
+      .trim()
+      .isLength({ min: 3 })
+      .withMessage("Please provide a valid username"),
+
+    // Email: If provided, it must be valid
     check("email")
+      .optional()
       .trim()
       .isEmail()
       .withMessage("Please provide a valid email")
       .normalizeEmail(),
 
-    // Password: Required
-    check("password").notEmpty().withMessage("Password is required"),
+    // Password: Required and must meet criteria
+    check("password")
+      .notEmpty()
+      .withMessage("Password is required")
+      .isLength({ min: 6 })
+      .withMessage("Please provide a valid password"),
   ],
 };

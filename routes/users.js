@@ -1,9 +1,10 @@
 import express from "express";
-import { registerUser } from "../controllers/users.js";
+import { registerUser, loginUser, logoutUser } from "../controllers/users.js";
 import { userValidationSchemas } from "../utils/validationSchemas.js";
 import { validationHandler } from "../middleware/validationHandler.js";
 import { avatarUpload } from "../middleware/multerMiddleware.js";
 import ErrorResponse from "../utils/errorResponse.js";
+import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
@@ -26,5 +27,14 @@ router.post(
   validationHandler,
   registerUser
 );
+
+router.post(
+  "/login",
+  userValidationSchemas.login,
+  validationHandler,
+  loginUser
+);
+
+router.post("/logout", protect, logoutUser);
 
 export default router;
