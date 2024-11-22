@@ -3,6 +3,7 @@ import User from "../models/user.js";
 import ErrorResponse from "../utils/errorResponse.js";
 import SuccessResponse from "../utils/successResponse.js";
 import uploadOnCloudinary from "../utils/cloudinaryService.js";
+import jwt from "jsonwebtoken";
 
 const generateAccessTokenAndRefreshTokens = async (user) => {
   try {
@@ -129,4 +130,76 @@ export const logoutUser = asyncHandler(async (req, res, next) => {
         data: {},
       })
     );
+});
+
+export const refreshAccessToken = asyncHandler(async (req, res, next) => {
+  try {
+    const incomingRefreshToken =
+      req.cookies.refreshToken || req.body.refreshToken;
+
+    if (!incomingRefreshToken) {
+      return next(
+        new ErrorResponse({ message: "Unauthorized request", statusCode: 401 })
+      );
+    }
+
+    const decodedToken = jwt.verify(
+      incomingRefreshToken,
+      process.env.REFRESH_TOKEN_SECRET
+    );
+
+    const user = await User.findById(decodedToken._id).select("+refreshToken");
+    if (!user) {
+      return next(
+        new ErrorResponse({ message: "Invalid refresh token", statusCode: 401 })
+      );
+    }
+
+    if (incomingRefreshToken !== user.refreshToken) {
+      console.error("Stored token:", user.refreshToken);
+      console.error("Incoming token:", incomingRefreshToken);
+      return next(
+        new ErrorResponse({
+          message: "Refresh token is expired or used",
+          statusCode: 401,
+        })
+      );
+    }
+
+    // Clear old cookies
+    res.clearCookie("accessToken").clearCookie("refreshToken");
+
+    // Set cookie options
+    const options = {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "Strict",
+    };
+
+    // Generate new tokens
+    const { accessToken, refreshToken } =
+      await generateAccessTokenAndRefreshTokens(user);
+
+    return res
+      .status(200)
+      .cookie("accessToken", accessToken, options)
+      .cookie("refreshToken", refreshToken, options)
+      .json(
+        new SuccessResponse({
+          message: "Access token refreshed successfully",
+          data: {
+            accessToken,
+            refreshToken,
+          },
+        })
+      );
+  } catch (error) {
+    console.error("Error refreshing token:", error.message);
+    return next(
+      new ErrorResponse({
+        message: error?.message || "Invalid refresh token",
+        statusCode: 401,
+      })
+    );
+  }
 });

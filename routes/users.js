@@ -1,5 +1,10 @@
 import express from "express";
-import { registerUser, loginUser, logoutUser } from "../controllers/users.js";
+import {
+  registerUser,
+  loginUser,
+  logoutUser,
+  refreshAccessToken,
+} from "../controllers/users.js";
 import { userValidationSchemas } from "../utils/validationSchemas.js";
 import { validationHandler } from "../middleware/validationHandler.js";
 import { avatarUpload } from "../middleware/multerMiddleware.js";
@@ -36,5 +41,7 @@ router.post(
 );
 
 router.post("/logout", protect, logoutUser);
+
+router.post("/refresh-token", refreshAccessToken);
 
 export default router;
