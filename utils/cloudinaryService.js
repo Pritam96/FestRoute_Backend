@@ -5,7 +5,6 @@ import ErrorResponse from "./errorResponse.js";
 
 dotenv.config({ path: "./config/config.env" });
 
-// Configuration
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -24,7 +23,6 @@ const uploadOnCloudinary = async (localFilePath) => {
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
     });
-    console.log("File upload successful", response);
 
     return response;
   } catch (error) {
@@ -35,7 +33,46 @@ const uploadOnCloudinary = async (localFilePath) => {
       statusCode: 500,
     });
   } finally {
-    fs.unlinkSync(localFilePath);
+    fs.unlink(localFilePath, (err) => {
+      if (err) console.error("Error deleting local file:", err);
+    });
+  }
+};
+
+export const deleteFromCloudinary = async (cloudinaryFileLink) => {
+  if (!cloudinaryFileLink) {
+    throw new ErrorResponse({
+      message: "Previous file link is missing",
+      statusCode: 400,
+    });
+  }
+
+  try {
+    // Extract the public ID and folder from the Cloudinary file URL
+    const urlParts = cloudinaryFileLink.split("/");
+    const publicId = urlParts[urlParts.length - 1].split(".")[0]; // Extract file name without extension
+
+    // const folder = urlParts[urlParts.length - 2]; // Assumes folder is the penultimate segment
+    // const publicIdWithFolder = `${folder}/${publicId}`; // Combine folder with file name
+    
+    // const response = await cloudinary.uploader.destroy(publicIdWithFolder);
+
+    const response = await cloudinary.uploader.destroy(publicId);
+
+    if (response.result !== "ok" && response.result !== "not found") {
+      throw new Error("Failed to delete the file from Cloudinary");
+    }
+
+    console.log("File deletion successful:", response);
+
+    return response;
+  } catch (error) {
+    console.error("Cloudinary deletion error:", error);
+
+    throw new ErrorResponse({
+      message: "Failed to delete previous image from Cloudinary",
+      statusCode: 500,
+    });
   }
 };
 

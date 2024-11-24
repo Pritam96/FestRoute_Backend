@@ -81,4 +81,44 @@ export const userValidationSchemas = {
       .isLength({ min: 6 })
       .withMessage("Please provide a valid password"),
   ],
+
+  changePassword: [
+    body().custom((value, { req }) => {
+      if (!req.body.currentPassword || !req.body.newPassword) {
+        throw new Error("Current password and new password is required");
+      }
+      return true;
+    }),
+
+    // Current Password: Required
+    check("currentPassword")
+      .notEmpty()
+      .withMessage("Current password is required"),
+
+    // New Password: Required and must meet criteria
+    check("newPassword")
+      .notEmpty()
+      .withMessage("New Password is required")
+      .isLength({ min: 6 })
+      .withMessage("Please provide a valid password"),
+  ],
+
+  updateDetails: [
+    // Full Name: Required, minimum 3 characters, only letters and spaces
+    check("fullName")
+      .trim()
+      .notEmpty()
+      .withMessage("Full name is required")
+      .isLength({ min: 3 })
+      .withMessage("Full name must be at least 3 characters")
+      .matches(/^[a-zA-Z\s]+$/)
+      .withMessage("Full name can only contain letters and spaces"),
+
+    // Email: Required, must be valid format, must be unique
+    check("email")
+      .trim()
+      .isEmail()
+      .withMessage("Please provide a valid email")
+      .normalizeEmail(),
+  ],
 };

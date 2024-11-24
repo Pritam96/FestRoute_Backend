@@ -2,7 +2,9 @@ import asyncHandler from "express-async-handler";
 import User from "../models/user.js";
 import ErrorResponse from "../utils/errorResponse.js";
 import SuccessResponse from "../utils/successResponse.js";
-import uploadOnCloudinary from "../utils/cloudinaryService.js";
+import uploadOnCloudinary, {
+  deleteFromCloudinary,
+} from "../utils/cloudinaryService.js";
 import jwt from "jsonwebtoken";
 
 const generateAccessTokenAndRefreshTokens = async (user) => {
@@ -202,4 +204,110 @@ export const refreshAccessToken = asyncHandler(async (req, res, next) => {
       })
     );
   }
+});
+
+export const changeCurrentPassword = asyncHandler(async (req, res, next) => {
+  const { oldPassword, newPassword } = req.body;
+
+  const user = await User.findById(req.user?._id).select("+password");
+  const isPasswordCorrect = await user.matchPassword(oldPassword);
+
+  if (!isPasswordCorrect) {
+    return next(
+      new ErrorResponse({ message: "Invalid old password", statusCode: 400 })
+    );
+  }
+
+  user.password = newPassword;
+  await user.save({ validateBeforeSave: false });
+
+  return res.status(200).json(
+    new SuccessResponse({
+      message: "Password changed successfully",
+      data: {},
+    })
+  );
+});
+
+export const getCurrentUser = asyncHandler(async (req, res, next) => {
+  return res.status(200).json(
+    new SuccessResponse({
+      message: "Current user fetched successfully",
+      statusCode: 200,
+      data: req.user,
+    })
+  );
+});
+
+export const updateAccountDetails = asyncHandler(async (req, res, next) => {
+  const { fullName, email } = req.body;
+
+  const user = await User.findByIdAndUpdate(
+    req.user?._id,
+    {
+      $set: {
+        fullName,
+        email,
+      },
+    },
+    { new: true }
+  );
+
+  return res.status(200).json(
+    new SuccessResponse({
+      message: "Account details updated successfully",
+      statusCode: 200,
+      data: user,
+    })
+  );
+});
+
+export const updateUserAvatar = asyncHandler(async (req, res, next) => {
+  const avatarLocalPath = req.files?.avatar?.[0]?.path;
+
+  if (!avatarLocalPath) {
+    return next(
+      new ErrorResponse({ message: "Avatar image is missing", statusCode: 400 })
+    );
+  }
+
+  // Upload new avatar to Cloudinary
+  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  if (!avatar.url) {
+    return next(
+      new ErrorResponse({
+        message: "Error while uploading avatar image",
+        statusCode: 500,
+      })
+    );
+  }
+
+  // Find user and store the current avatar URL for deletion
+  const user = await User.findById(req.user?._id);
+  const oldAvatarUrl = user.avatar;
+
+  // Update user's avatar
+  user.avatar = avatar.url;
+  await user.save({ validateBeforeSave: false });
+
+  // Delete the old avatar from Cloudinary (if it exists)
+  if (oldAvatarUrl) {
+    try {
+      await deleteFromCloudinary(oldAvatarUrl);
+    } catch (error) {
+      console.error(
+        "Failed to delete old avatar from Cloudinary:",
+        error.message
+      );
+      // Proceed without failing the request for this error
+    }
+  }
+
+  return res.status(200).json(
+    new SuccessResponse({
+      message: "Avatar image updated successfully",
+      statusCode: 200,
+      data: user,
+    })
+  );
 });
