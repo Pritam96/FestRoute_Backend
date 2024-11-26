@@ -11,7 +11,7 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const uploadOnCloudinary = async (localFilePath) => {
+export const uploadOnCloudinary = async (localFilePath, options = {}) => {
   if (!localFilePath) {
     throw new ErrorResponse({
       message: "File path is required",
@@ -22,11 +22,18 @@ const uploadOnCloudinary = async (localFilePath) => {
   try {
     const response = await cloudinary.uploader.upload(localFilePath, {
       resource_type: "auto",
+      ...options,
     });
-
     return response;
   } catch (error) {
     console.error("Cloudinary upload error:", error);
+
+    // if (error.http_code === 400) {
+    //   throw new ErrorResponse({
+    //     message: "Invalid file format",
+    //     statusCode: 400,
+    //   });
+    // }
 
     throw new ErrorResponse({
       message: "Failed to upload image to Cloudinary",

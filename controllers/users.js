@@ -250,9 +250,21 @@ export const updateUserAvatar = asyncHandler(async (req, res, next) => {
     );
   }
 
+  // Validate file type and size
+  // const fileMimeType = req.files?.avatar?.[0]?.mimetype;
+  // if (!["image/jpeg", "image/png"].includes(fileMimeType)) {
+  //   return next(
+  //     new ErrorResponse({ message: "Invalid image format", statusCode: 400 })
+  //   );
+  // }
+
   // Upload new avatar to Cloudinary
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
+  const avatar = await uploadOnCloudinary(avatarLocalPath, {
+    transformation: { width: 200, height: 200, crop: "fill" }, // Optimize image
+  });
+
   if (!avatar.url) {
+    console.error("Cloudinary upload error:", avatar.error);
     return next(
       new ErrorResponse({
         message: "Error while uploading avatar image",
@@ -261,24 +273,21 @@ export const updateUserAvatar = asyncHandler(async (req, res, next) => {
     );
   }
 
-  // Find user and store the current avatar URL for deletion
   const user = await User.findById(req.user?._id);
-  const oldAvatarUrl = user.avatar;
 
-  // Update user's avatar
+  // Check if it's a default image
+  const DEFAULT_AVATAR_URL = process.env.DEFAULT_AVATAR_URL;
+  const oldAvatarUrl = user.avatar === DEFAULT_AVATAR_URL ? null : user.avatar;
+
   user.avatar = avatar.url;
   await user.save({ validateBeforeSave: false });
 
-  // Delete the old avatar from Cloudinary (if it exists)
+  // Attempt to delete old avatar (if exists)
   if (oldAvatarUrl) {
     try {
       await deleteFromCloudinary(oldAvatarUrl);
     } catch (error) {
-      console.error(
-        "Failed to delete old avatar from Cloudinary:",
-        error.message
-      );
-      // Proceed without failing the request for this error
+      console.error("Failed to delete old avatar:", error.message);
     }
   }
 

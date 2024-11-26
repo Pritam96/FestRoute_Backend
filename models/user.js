@@ -38,6 +38,8 @@ const userSchema = new Schema(
     // URL for the user's avatar
     avatar: {
       type: String,
+      default:
+        "https://res.cloudinary.com/dtf0q4wz2/image/upload/v1732600093/blank-profile.png",
     },
 
     // Flag for admin privileges
