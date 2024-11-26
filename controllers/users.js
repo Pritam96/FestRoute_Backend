@@ -26,28 +26,7 @@ const generateAccessTokenAndRefreshTokens = async (user) => {
 };
 
 export const registerUser = asyncHandler(async (req, res, next) => {
-  // Ensure avatar file exists
-  const avatarLocalPath = req.files?.avatar?.[0]?.path;
-
-  if (!avatarLocalPath) {
-    return next(
-      new ErrorResponse({ message: "Avatar file is required", statusCode: 400 })
-    );
-  }
-
-  // Upload to Cloudinary
-  const avatar = await uploadOnCloudinary(avatarLocalPath);
-  if (!avatar) {
-    return next(
-      new ErrorResponse({ message: "Failed to upload avatar", statusCode: 500 })
-    );
-  }
-
-  // Create user with avatar URL
-  const user = await User.create({
-    ...req.body,
-    avatar: avatar.url,
-  });
+  const user = await User.create(req.body);
 
   return res.status(201).json(
     new SuccessResponse({

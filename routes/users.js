@@ -33,8 +33,6 @@ const validateAvatar = (req, res, next) => {
 // Register user
 router.post(
   "/register",
-  avatarUpload, // Handle avatar upload first
-  validateAvatar, // Ensure avatar file exists
   userValidationSchemas.register,
   validationHandler,
   registerUser

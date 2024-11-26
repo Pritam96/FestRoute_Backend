@@ -20,9 +20,8 @@ export const userValidationSchemas = {
 
     // Full Name: Required, minimum 3 characters, only letters and spaces
     check("fullName")
+      .optional({ nullable: true })
       .trim()
-      .notEmpty()
-      .withMessage("Full name is required")
       .isLength({ min: 3 })
       .withMessage("Full name must be at least 3 characters")
       .matches(/^[a-zA-Z\s]+$/)

@@ -31,7 +31,6 @@ const userSchema = new Schema(
     // Full name of the user for display purposes
     fullName: {
       type: String,
-      required: [true, "Full name is required"],
       trim: true,
       index: true,
     },
@@ -39,7 +38,6 @@ const userSchema = new Schema(
     // URL for the user's avatar
     avatar: {
       type: String,
-      required: [true, "Avatar URL is required"],
     },
 
     // Flag for admin privileges
